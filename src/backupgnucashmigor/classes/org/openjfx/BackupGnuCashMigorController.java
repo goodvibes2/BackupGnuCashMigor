@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2019 goodc
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* 31/08/2014 1.01 1. Fix bug in getUserDefaults() where it was trying to get
@@ -53,7 +64,7 @@
                     put saved-reports-2.n in different places.
 */
 
-package backupgnucashmigor;
+package org.openjfx;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -441,11 +452,13 @@ public class BackupGnuCashMigorController implements Initializable {
             //fosOut.close();  // done automatically when try with resources ends
         } catch (Throwable t)
         {
-            taLog.appendText("reg.exe FAILED");
+            taLog.appendText("reg.exe FAILED - StackTrace Logged");
             if (exitVal == 0) {
                 exitVal = 99;
             }
-            t.printStackTrace();
+            // NetBeans 11 suggests stack traces should be logged, not shown to users
+            //t.printStackTrace();
+            Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, t);
         }
 
         // add stderr of reg.exe process to taLog
@@ -1072,11 +1085,12 @@ public class BackupGnuCashMigorController implements Initializable {
             //fosOut.close();  // done automatically when try with resources ends      
         } catch (Throwable t)
         {
-            taLog.appendText("7-Zip FAILED");
+            taLog.appendText("7-Zip FAILED - StackTrace logged");
             if (exitVal == 0) {
                 exitVal = 99;
             }
-            t.printStackTrace();
+            //t.printStackTrace();
+            Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, t);
         }
         
         // add stderr of 7-zip process to taLog
@@ -1276,11 +1290,13 @@ public class BackupGnuCashMigorController implements Initializable {
             fosOut.close();        
         } catch (Throwable t)
         {
-            taLog.appendText("7-Zip FAILED");
+            taLog.appendText("7-Zip FAILED - StackTrace logged");
             if (exitVal == 0) {
                 exitVal = 99;
             }
-            t.printStackTrace();
+            //t.printStackTrace();
+            Logger.getLogger(BackupGnuCashMigorController.class.getName())
+                .log(Level.SEVERE, null, t);
         }
         
         // add stderr of 7-zip process to taLog
