@@ -62,6 +62,9 @@
     10/02/2019 1.24 V3: look for saved-reports-2.8 before saved-reports-2.4
     16/02/2019 1.25 V3: look for saved-reports-2.4 even if V2 is selected as V2 & V3
                     put saved-reports-2.n in different places.
+    13/08/2019 2.0  Port project from java 8 to a Modular Java 11 project.
+    11/03/2020 2.01 Fix bug where a deleted Book was not also removed from defaultProps so
+                    would reappear next time defaultProperties file was loaded.
 */
 
 package org.openjfx;
