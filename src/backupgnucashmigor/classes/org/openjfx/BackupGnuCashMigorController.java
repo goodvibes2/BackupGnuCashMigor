@@ -65,6 +65,7 @@
     13/08/2019 2.0  Port project from java 8 to a Modular Java 11 project.
     11/03/2020 2.01 Fix bug where a deleted Book was not also removed from defaultProps so
                     would reappear next time defaultProperties file was loaded.
+    18/06/2021 2.02 Clear GC Mod DateTime and Migor FE Mod DateTime if file not found.
 */
 
 package org.openjfx;
@@ -721,6 +722,7 @@ public class BackupGnuCashMigorController implements Initializable {
             }
         } else {                
             taLog.appendText("Error: GnuCash data is not readable or does not exist\n");
+            lblGCModDate.setText("Modified :");
         }
 
         // Check Migor front end file
@@ -777,6 +779,7 @@ public class BackupGnuCashMigorController implements Initializable {
             }                        
         } else {                    
             taLog.appendText("Error: Migor Front End is not readable or does not exist or is locked\n");
+            lblMigorModDate.setText("Modified :");
         }
 
         // Validate DropBox directory
