@@ -64,7 +64,7 @@
          <font>
             <Font size="14.0" />
          </font>
-      </Label>    
+      </Label>
       <RadioButton fx:id="rb1" mnemonicParsing="false" text="user1" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <font>
             <Font size="14.0" />
