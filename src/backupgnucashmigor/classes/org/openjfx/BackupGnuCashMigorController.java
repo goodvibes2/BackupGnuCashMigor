@@ -24,21 +24,21 @@
                    2. Chk MigorData.accdb exists.
    25/12/2014 1.04 Use HH (00-23) instead of hh (01-12) for hour in archive
                    filename.
-   10/01/2015 1.05 1. Make chbShowPswd wider so text is not truncated when 
-                    Windows default text size is increased to Medium 
+   10/01/2015 1.05 1. Make chbShowPswd wider so text is not truncated when
+                    Windows default text size is increased to Medium
                     (fxml mod only).
                    2. Show visible password in same place as masked pswd.
                    3. Give error if Access or GnuCash lock files exist.
    11/01/2015 1.06 Run enable_or_disable_buttons when chbShowPswd changes.
-   12/07/2015 1.07 1. Fix bug using lblGCModDate to show exception instead of 
+   12/07/2015 1.07 1. Fix bug using lblGCModDate to show exception instead of
                     lblMigorModDate.
                    2. Refresh modified dates after choosing a file.
-                   3. handleBtnActionChooseMigor() : 
+                   3. handleBtnActionChooseMigor() :
                         Make default Access extensions both *.accdb + *.mdb
                         and allow to select both or either.
                    4. Change error msg when Access file is not readable to
                         advise that it may be not readable or locked.
-                   5. Add new field for the option GnuCash version file name 
+                   5. Add new field for the option GnuCash version file name
                         suffix.
                    6. Force winUserName to lowercase as ausyncgood = CGOOD,
                                                         goodi7     = cgood
@@ -65,6 +65,7 @@
     13/08/2019 2.0  Port project from java 8 to a Modular Java 11 project.
     11/03/2020 2.01 Fix bug where a deleted Book was not also removed from defaultProps so
                     would reappear next time defaultProperties file was loaded.
+    18/06/2021 2.02 Clear GC Mod DateTime and Migor FE Mod DateTime if file not found.
 */
 
 package org.openjfx;
@@ -119,9 +120,9 @@ import javafx.stage.Window;
  * @author cgood
  */
 public class BackupGnuCashMigorController implements Initializable {
-    
+
     /* class variables */
-    
+
     @FXML
     private GridPane grid;
     @FXML
@@ -194,7 +195,7 @@ public class BackupGnuCashMigorController implements Initializable {
     private Label lblLog;
     @FXML
     private TextArea taLog;
-        
+
     final private static String winUserName = System.getenv("USERNAME").toLowerCase();
     // character that separates folders from files in paths
     //  i.e. Windows = backslash, Linux/OSX = /
@@ -210,26 +211,26 @@ public class BackupGnuCashMigorController implements Initializable {
     /* Chris Good */
     final private static String userCg = "goodc";
 
-    private static String gcDatFilCg = 
+    private static String gcDatFilCg =
         "E:\\Data\\GnuCash\\267\\MGCG2012\\MGCG2012.gnucash";
     private static String gcVerCg = ""; // optional version backup filename suffix
-    private static String migorDatFilCg = 
+    private static String migorDatFilCg =
         "E:\\Data\\Access\\Access2010\\MGCG\\Migor2014V05.accdb";
-    private static String dropBoxCg = 
+    private static String dropBoxCg =
         "E:\\Data\\Dropbox";
-    
+
     /* Gordon McFarlane */
   //final private static String userGm = "Gordon";  // OLD
   //final private static String userGm = "gordon";  // OLD
     final private static String userGm = "gordo";
-    private static String gcDatFilGm = 
+    private static String gcDatFilGm =
         "C:\\Users\\" + userGm + "\\My Documents\\GnuCash\\2.6.7\\BBGJ2012\\BBGJ2012.gnucash";
     private static String gcVerGm = "";
-    private static String migorDatFilGm = 
+    private static String migorDatFilGm =
         "C:\\Users\\" + userGm + "\\My Documents\\Migor\\Migor2014V05.accdb";
-    private static String dropBoxGm = 
+    private static String dropBoxGm =
         "C:\\Users\\gordo\\Dropbox";
-    
+
     private static Path pathGcDatFilStr;
     private static Path  pathMigorFeFilStr;
   //private static String strDropBoxDir;
@@ -245,11 +246,11 @@ public class BackupGnuCashMigorController implements Initializable {
 
     //  default properties
     private static final Properties defaultProps = new Properties();
-        
+
     final private static ToggleGroup userGroup = new ToggleGroup();
-    
+
     private static boolean firstTime = true;
-    
+
     @FXML
     public void handleBtnActionSaveSettings(Event e) throws IOException {
         defaultProps.setProperty("dropBox",     txtDropBox.getText());
@@ -261,22 +262,22 @@ public class BackupGnuCashMigorController implements Initializable {
         defaultProps.setProperty("gcV3Cfg", String.valueOf(chbGcV3Cfg.isSelected()));
         defaultProps.setProperty("migorDatFil", txtMigorFeFilStr.getText());
         defaultProps.setProperty("migorDatFil", txtMigorFeFilStr.getText());
-        
+
         try (FileOutputStream out = new FileOutputStream(Paths.get(strErrFil).getParent() +
                 "\\defaultProperties")) {
             defaultProps.store(out, "---Backup GnuCash/Migor Settings---");
             taLog.setText("Settings successfully saved");
         } catch (IOException ex) {
             //System.out.println("My Exception Message " + ex.getMessage());
-            //System.out.println("My Exception Class " + ex.getClass());            
+            //System.out.println("My Exception Class " + ex.getClass());
             Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, ex);
             taLog.setText("Error: Cannot Save Settings to : " + Paths.get(strErrFil).getParent() +
                 "\\defaultProperties");
         }
     }
-    
+
     public static void getUserDefaults() {
-        
+
         try (   // with resources
             FileInputStream in = new FileInputStream(Paths.get(strErrFil).getParent() +
                 "\\defaultProperties");
@@ -298,31 +299,31 @@ public class BackupGnuCashMigorController implements Initializable {
                 migorDatFilGm = defaultProps.getProperty("migorDatFil");
                 dropBoxGm = defaultProps.getProperty("dropBox");
             }
-            //in.close();  // done automatically when 'try with resources' ends            
+            //in.close();  // done automatically when 'try with resources' ends
         } catch (IOException ex) {
             //System.out.println("My Exception Message " + ex.getMessage());
             //System.out.println("My Exception Class " + ex.getClass());
-            
+
             if (ex.getClass().toString().equals("class java.io.FileNotFoundException")) {
                 System.out.println("getUserDefaults: " + ex.getMessage());
             } else {
                 Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, ex);
-            }    
+            }
         }
     }
 
 //    public static String getWinUserName() {
 //        return winUserName;
 //    }
-    
+
     public static String getUserCg() {
         return userCg;
     }
-    
+
     public static String getUserGm() {
         return userGm;
     }
-    
+
     public static String getGcDatFil(String strInUser) {
         if (strInUser.equals(userCg)) {
             return gcDatFilCg;
@@ -380,18 +381,18 @@ public class BackupGnuCashMigorController implements Initializable {
     boolean isValidPswd() {
         return txtPswd.getText().length() > 7 ;
     }
-    
+
     private static boolean isFirstTime() {
         return firstTime;
     }
-    
+
 /*    void logText(String strText) {
         taLog.appendText(strText);
     }
-*/    
+*/
 
     boolean exportRegistry() {
-        
+
         // Use reg.exe to export GnuCash registry entries to a text file which can be backed up
 
         int exitVal = 0;
@@ -515,12 +516,12 @@ public class BackupGnuCashMigorController implements Initializable {
             strHome + "\\" + PROPERTIES_DIR + "\\defaultProperties\n" +
             "The password is NOT saved."
         ));
-        
+
         txtGcDatFilStr.setTooltip(new Tooltip(
             "GnuCash data file:\n" +
             "The full directory and file string of the GnuCash data file.\n"
         ));
-        
+
         txtGcVer.setTooltip(new Tooltip(
             "GnuCash Version:\nOptional suffix added to GnuCash backup file name.\n"
         ));
@@ -550,7 +551,7 @@ public class BackupGnuCashMigorController implements Initializable {
             "Migor Front End:\n" +
             "The full directory and file string of the Migor Front End database.\n"
         ));
-        
+
         txtDropBox.setTooltip(new Tooltip(
             "DropBox Base Directory:\n" +
             "The encrypted compressed backup file will be saved in a sub-directory\n" +
@@ -558,16 +559,16 @@ public class BackupGnuCashMigorController implements Initializable {
             "The GnuCash backup file will be saved in a sub-directory called 'GnuCash'.\n" +
             "The Migor backup file will be saved in a sub-directory called 'Migor'."
         ));
-        
+
         // Tooltips (same) for txtPswd & txtVisPswd
         final String strTooltipPswd =
             "Password:\n" +
             "The archived files will be compressed and encrypted with this password using 7-Zip.\n" +
             "Minimum length is 8 characters.";
         txtPswd.setTooltip(new Tooltip(strTooltipPswd));
-        
+
         txtVisPswd.setTooltip(new Tooltip(strTooltipPswd));
-        
+
         btnBupGC.setTooltip(new Tooltip(
             "Backup GnuCash:\n" +
             "The data file will be archived (compressed and encrypted) to the 'Backup' sub-directory\n" +
@@ -590,7 +591,7 @@ public class BackupGnuCashMigorController implements Initializable {
         ));
 
     }
-    
+
     void enable_or_disable_buttons() {
         //System.out.println("enable_or_disable_buttons");
         boolean boolUserOk = false;
@@ -598,37 +599,37 @@ public class BackupGnuCashMigorController implements Initializable {
         boolean boolGcOk = false;
         boolean boolMigorOk = false;
         boolean boolDropBoxOk = false;
-        
+
         taLog.clear();
-        
+
         // Note:    Disable  property : Defines the individual disabled state of this Node.
         //                              'Disable' may be false and 'Disabled true' if a parent node is Disabled.
         //          Disabled propery  : Indicates whether or not this Node is disabled. Could be 'Disabled' because parent node is disabled.
-        
+
         // Test: isDisabled(), Set: setDisable() NOT setDisabled()
-        
-        // 18/07/2015 Do NOT enable or disable until it is determined this needs 
+
+        // 18/07/2015 Do NOT enable or disable until it is determined this needs
         //              happen to see if this is causing unwanted Focus change ???
-        
+
 /*      btnBupGC.setDisable(true);          //Disable
         btnBupMigor.setDisable(true);
         btnSaveSettings.setDisable(true);
 */
         //System.out.println("btnSaveSettings Disabled");
-                
+
         if ((isValidUser() == true)) {
             boolUserOk = true;
         } else {
           //taLog.setText("Error: Invalid user: " + getWinUserName() + "\n");
             taLog.setText("Error: Invalid user: " + winUserName + "\n");
         }
-        
+
         if (isValidPswd()) {
             boolPswdOk = true;
         } else {
             taLog.appendText("Please enter Password - minimum length is 8 characters\n");
         }
-        
+
         pathGcDatFilStr = Paths.get(txtGcDatFilStr.getText());
         if (Files.isReadable(pathGcDatFilStr)) {
             // show the Last Modified date/time
@@ -685,7 +686,7 @@ public class BackupGnuCashMigorController implements Initializable {
                     // GnuCash V3
                     // uses saved-reports-2.4 if no saved-reports-2.8 exists
                     //  but only writes to saved-reports-2.8
-                    
+
                     // chk %APPDATA%\GnuCash\saved-reports-2.8 exists
                     pathGcSavRpt = Paths.get(System.getenv("APPDATA") +
                         "\\GnuCash\\saved-reports-2.8");
@@ -704,7 +705,7 @@ public class BackupGnuCashMigorController implements Initializable {
                                 " is not readable or does not exist\n");
                         }
                     }
-                    
+
                     // chk %APPDATA%\GnuCash\books\[BOOK].gnucash.gcm exists
                     //   Note %APPDATA% is usually C:\Users\%USERNAME%\AppData\Roaming
                     //   GnuCash V#2.7+
@@ -719,14 +720,15 @@ public class BackupGnuCashMigorController implements Initializable {
                     }
                 }
             }
-        } else {                
+        } else {
             taLog.appendText("Error: GnuCash data is not readable or does not exist\n");
+            lblGCModDate.setText("Modified :");
         }
 
         // Check Migor front end file
         //  Note: If MS Access 2013 has the database file open, it seems to have it locked
         //      which causes Files.isReadable to fail
-        
+
         pathMigorFeFilStr = Paths.get(txtMigorFeFilStr.getText());
         if (Files.isReadable(pathMigorFeFilStr)) {
             String strMigorData;
@@ -767,20 +769,21 @@ public class BackupGnuCashMigorController implements Initializable {
                 } else {
                     if (Files.isReadable(pathMigorDatLckFilStr)) {
                         taLog.appendText("Error: MigorData lock file " + pathMigorDatLckFilStr.toString() +
-                            " exists - Migor may be open or may have crashed leaving the lockfile\n");                        
+                            " exists - Migor may be open or may have crashed leaving the lockfile\n");
                     } else {
                             boolMigorOk = true;
                     }
                 }
-            } else {                    
+            } else {
                 taLog.appendText("Error: " + strMigorData + " does not exist in same folder as front end\n");
-            }                        
-        } else {                    
+            }
+        } else {
             taLog.appendText("Error: Migor Front End is not readable or does not exist or is locked\n");
+            lblMigorModDate.setText("Modified :");
         }
 
         // Validate DropBox directory
-        
+
         if (Files.isWritable(Paths.get(txtDropBox.getText()))) {
             if (Files.isWritable(Paths.get(txtDropBox.getText() + "\\GnuCash"))) {
                 if (Files.isWritable(Paths.get(txtDropBox.getText() + "\\Migor"))) {
@@ -796,7 +799,7 @@ public class BackupGnuCashMigorController implements Initializable {
         }
 
         // Note: Test: isDisabled(), but to actually enable or disable: setDisable()
-        
+
         // enable or disable btnBupGC
         if (boolUserOk && boolPswdOk && boolGcOk && boolDropBoxOk) {
             if (btnBupGC.isDisabled()) {        // if Disabled
@@ -807,7 +810,7 @@ public class BackupGnuCashMigorController implements Initializable {
                 btnBupGC.setDisable(true);     //      Disable
             }
         }
-        
+
         // enable or disable btnBupMigor
         if (boolUserOk && boolPswdOk && boolMigorOk && boolDropBoxOk) {
             if (btnBupMigor.isDisabled()) {        // if Disabled
@@ -818,7 +821,7 @@ public class BackupGnuCashMigorController implements Initializable {
                 btnBupMigor.setDisable(true);     //      Disable
             }
         }
-        
+
         // enable or disable btnSaveSettings
         if (boolUserOk && boolGcOk && boolMigorOk && boolDropBoxOk) {
             if (btnSaveSettings.isDisabled()) {        // if Disabled
@@ -833,7 +836,7 @@ public class BackupGnuCashMigorController implements Initializable {
 
         // Change Focus to password if all except password OK
         if ((boolUserOk && boolGcOk && boolMigorOk && boolDropBoxOk) && (! isValidPswd()) ) {
-            //System.out.println("txtPswd.isVisible=" + txtPswd.isVisible() + 
+            //System.out.println("txtPswd.isVisible=" + txtPswd.isVisible() +
             //    " txtVisPswd.isVisible=" + txtVisPswd.isVisible());
             if (txtPswd.isVisible()) {
                 if (! txtPswd.isFocused()) {
@@ -871,7 +874,7 @@ public class BackupGnuCashMigorController implements Initializable {
                 }
             } else {
                 if (boolGcOk && boolMigorOk && boolDropBoxOk ) {
-                    System.out.println("txtPswd.isVisible=" + txtPswd.isVisible() + 
+                    System.out.println("txtPswd.isVisible=" + txtPswd.isVisible() +
                         " txtVisPswd.isVisible=" + txtVisPswd.isVisible());
                     if (txtPswd.isVisible()) {
                         txtPswd.requestFocus();     // NOT working when called from initialize()
@@ -880,12 +883,12 @@ public class BackupGnuCashMigorController implements Initializable {
                     }
                 }
             }
- */              
+ */
     }
-    
+
     public void handleUserGroupToggled(String strInUser) {
         //System.out.println("handleUserGroupToggled");
-        
+
         if (strInUser.equals(winUserName)) {
             strHome = System.getProperty("user.home");
         } else {
@@ -894,16 +897,16 @@ public class BackupGnuCashMigorController implements Initializable {
         }
         strErrFil = strHome + "\\" + PROPERTIES_DIR + "\\BackGnuCashMigor.err";
         strOutFil = strHome + "\\" + PROPERTIES_DIR + "\\BackGnuCashMigor.out";
-        
+
         txtGcDatFilStr.setText  (getGcDatFil   (strInUser));
         txtGcVer.setText        (getGcVer      (strInUser));
         txtMigorFeFilStr.setText(getMigorDatFil(strInUser));
         txtDropBox.setText      (getDropBoxDir (strInUser));
-        
+
         setTooltips();  // contain user dependent filestrings
         enable_or_disable_buttons();
     }
-    
+
     /**
      * Backup GnuCash by using commands like
      * cmd.exe          NOT Used
@@ -926,21 +929,21 @@ public class BackupGnuCashMigorController implements Initializable {
      *    C:\Users\goodc\AppData\Roaming\GnuCash\books\MGCG2012.gnucash.gcm
      *
      * copy /y ...Backup\GnuCashMGCG2012_%yyyymmdd%_267.7z  E:\Data\Dropbox\GnuCash
-     * 
+     *
      * @author goodc
      * @param e
      * @throws java.io.IOException
      */
     @FXML
-    public void handleBtnActionBupGC(Event e) throws IOException 
-    {    
+    public void handleBtnActionBupGC(Event e) throws IOException
+    {
         /* NOTE: it does NOT seem possible to include redirection args like
             > or 2>&1 even if using cmd.exe /c
         */
         final int cmdElements = 10;
         String strArchive = "";
         int exitVal = 0;
-        
+
         // create archive using 7z.exe
         taLog.clear();
         taLog.appendText("Backing up GnuCash...\n");
@@ -956,12 +959,12 @@ public class BackupGnuCashMigorController implements Initializable {
             }
         }
 
-        try {            
+        try {
             int i = 0;
             String[] cmd = new String[cmdElements];
-            
+
 /*          As I'm not using internal shell commands, cmd.exe is not neeeded
-            
+
             String osName = System.getProperty("os.name" );
             switch (osName) {
                 case "Windows 95":
@@ -986,7 +989,7 @@ public class BackupGnuCashMigorController implements Initializable {
             // not sure if need to quote, but doesn't hurt
             cmd[i++] = "\"" + path7z + "\"";
             cmd[i++] = "a";     // add to archive
-            
+
             // archive file string eg
             // E:\Data\GnuCash\267\MGCG2012\Backup\GnuCashMGCG2012_yyyymmddhhmm_267.7z
             FileName fileName = new FileName(txtGcDatFilStr.getText(),
@@ -1004,10 +1007,10 @@ public class BackupGnuCashMigorController implements Initializable {
                 today.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm")) +
                 strVerSuffix + ".7z";
             cmd[i++] = "\"" + strArchive + "\"";
-         
+
             // password
             cmd[i++] = "-p" + txtPswd.getText();
-            
+
             // GC data file eg E:\Data\GnuCash\267\MGCG2012\MGCG2012.gnucash
             cmd[i++] = "\"" + txtGcDatFilStr.getText() + "\"";
 
@@ -1046,25 +1049,25 @@ public class BackupGnuCashMigorController implements Initializable {
                 // stop rt.exec getting NullPointerException
                 cmd[i++] = "";
             }
-            
+
             Runtime rt = Runtime.getRuntime();
-            
+
             System.out.println("Execing ");
 //            for (int j = 0; j < i; j++) {
 //                System.out.println(cmd[j]);
 //            }
             Process proc = rt.exec(cmd);
-            
+
             // make sure output is consumed so system buffers do not fill up
             // and cause the process to hang
-            
+
             /*  Because any updates to the JavaFX gui must be done from the JavaFX
                 application thread, it is not possible to update taLog from
                 StreamGobbler, so I use StreamGobbler to put stdout &
                 stderr to files, and just copy the contents of the files to taLog
                 when the 7zip'ing finishes.
              */
-            
+
             try (   // with resources
                 FileOutputStream fosErr = new FileOutputStream(strErrFil);
                 FileOutputStream fosOut = new FileOutputStream(strOutFil)
@@ -1083,9 +1086,9 @@ public class BackupGnuCashMigorController implements Initializable {
                 taLog.appendText("7-zip ExitValue: " + exitVal + "\n");
                 fosErr.flush();
                 fosOut.flush();
-            }        
-            //fosErr.close();  // done automatically when try with resources ends      
-            //fosOut.close();  // done automatically when try with resources ends      
+            }
+            //fosErr.close();  // done automatically when try with resources ends
+            //fosOut.close();  // done automatically when try with resources ends
         } catch (Throwable t)
         {
             taLog.appendText("7-Zip FAILED - StackTrace logged");
@@ -1095,7 +1098,7 @@ public class BackupGnuCashMigorController implements Initializable {
             //t.printStackTrace();
             Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, t);
         }
-        
+
         // add stderr of 7-zip process to taLog
         Path pthErrFil = Paths.get(strErrFil);
         try (InputStream in = Files.newInputStream(pthErrFil);
@@ -1157,16 +1160,16 @@ public class BackupGnuCashMigorController implements Initializable {
      * "E:\Program Files\7-Zip\7z.exe"
      *  a
      *  E:\Data\Access\Access2010\MGCG\Backup\MigorMGCG%yyyymmdd%.7z
-     *  -p%pswd% 
-     *  E:\Data\Access\Access2010\MGCG\Migor2014V05.accdb 
-     *  E:\Data\Access\Access2010\MGCG\MigorData.accdb 
-     *  E:\Data\Access\Access2010\MGCG\GetQuote.bat 
-     *  E:\Data\Access\Access2010\MGCG\GetQuote.err 
-     *  E:\Data\Access\Access2010\MGCG\GetQuote.out 
-     *  E:\Data\Access\Access2010\MGCG\GetQuote.pl 
-     *  E:\Data\Access\Access2010\MGCG\GetQuoteList.txt 
+     *  -p%pswd%
+     *  E:\Data\Access\Access2010\MGCG\Migor2014V05.accdb
+     *  E:\Data\Access\Access2010\MGCG\MigorData.accdb
+     *  E:\Data\Access\Access2010\MGCG\GetQuote.bat
+     *  E:\Data\Access\Access2010\MGCG\GetQuote.err
+     *  E:\Data\Access\Access2010\MGCG\GetQuote.out
+     *  E:\Data\Access\Access2010\MGCG\GetQuote.pl
+     *  E:\Data\Access\Access2010\MGCG\GetQuoteList.txt
      *  E:\Data\Access\Access2010\MGCG\WorkingSharesCalc.xlsx
-     * 
+     *
      * copy /y MigorMGCG%yyyymmdd%.7z  E:\Data\Dropbox\Migor
      * @author goodc
      * @param e
@@ -1177,7 +1180,7 @@ public class BackupGnuCashMigorController implements Initializable {
         final int cmdElements = 12;
         String strArchive = "";
         int exitVal = 0;
-        
+
         // create archive using 7z.exe
         taLog.clear();
         String str7z = "\\Program Files\\7-Zip\\7z.exe";
@@ -1185,21 +1188,21 @@ public class BackupGnuCashMigorController implements Initializable {
         if (! Files.isExecutable(path7z)) {
             path7z = Paths.get("E:" + str7z);
             if (! Files.isExecutable(path7z)) {
-                taLog.setText("Error: Cannot execute " + str7z 
+                taLog.setText("Error: Cannot execute " + str7z
                     + " on either C: or E:" );
                 return;
             }
         }
-        try {            
+        try {
             int i = 0;
             String[] cmd = new String[cmdElements];
-            
+
             // 7-zip executable eg
             // "E:\Program Files\7-Zip\7z.exe"
             // not sure if need to quote, but doesn't hurt
             cmd[i++] = "\"" + path7z + "\"";
             cmd[i++] = "a";     // add to archive
-            
+
             // archive file string eg
             // E:\Data\Access\Access2010\MGCG\Backup\MigorMGCGyyyymmddhhmm.7z
             FileName fileName = new FileName(txtMigorFeFilStr.getText(),
@@ -1211,72 +1214,72 @@ public class BackupGnuCashMigorController implements Initializable {
             } else {
                 strArchive = strArchive + "BBGJ";
             }
-            strArchive = strArchive + 
+            strArchive = strArchive +
 //              today.format(DateTimeFormatter.BASIC_ISO_DATE) +
                 today.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm")) +
                 ".7z";
             cmd[i++] = "\"" + strArchive + "\"";
-         
+
             // password
             cmd[i++] = "-p" + txtPswd.getText();
-            
-            // Migor FrontEnd file eg 
+
+            // Migor FrontEnd file eg
             //  E:\Data\Access\Access2010\MGCG\Migor2014V02.accdb
             cmd[i++] = "\"" + txtMigorFeFilStr.getText() + "\"";
-            
+
             // Migor data db file string
-            //  eg E:\Data\Access\Access2010\MGCG\MigorData.accdb 
+            //  eg E:\Data\Access\Access2010\MGCG\MigorData.accdb
             cmd[i++] = "\"" + fileName.path() + "\\MigorData." +
                 (txtMigorFeFilStr.getText().endsWith(".mdb") ? "mdb" : "accdb") + "\"" ;
-                
+
             // E:\Data\Access\Access2010\MGCG\GetQuote.bat
             cmd[i++] = "\"" + fileName.path() + "\\GetQuote.bat\"";
-        
-            // E:\Data\Access\Access2010\MGCG\GetQuote.err 
+
+            // E:\Data\Access\Access2010\MGCG\GetQuote.err
             cmd[i++] = "\"" + fileName.path() + "\\GetQuote.err\"";
-            
-            // E:\Data\Access\Access2010\MGCG\GetQuote.out 
+
+            // E:\Data\Access\Access2010\MGCG\GetQuote.out
             cmd[i++] = "\"" + fileName.path() + "\\GetQuote.out\"";
-            
-            // E:\Data\Access\Access2010\MGCG\GetQuote.pl 
+
+            // E:\Data\Access\Access2010\MGCG\GetQuote.pl
             cmd[i++] = "\"" + fileName.path() + "\\GetQuote.pl\"";
-            
+
             // E:\Data\Access\Access2010\MGCG\GetQuoteList.txt
             cmd[i++] = "\"" + fileName.path() + "\\GetQuoteList.txt\"";
-            
+
             // E:\Data\Access\Access2010\MGCG\WorkingSharesCalc.xlsx
             if (userGroup.getSelectedToggle().getUserData().toString().equals(userCg)) {
                 cmd[i++] = "\"" + fileName.path() + "\\WorkingSharesCalc.xlsx\"";
             }
-            
+
             while (i < cmdElements) {
                 // stop rt.exec getting NullPointerException
                 cmd[i++] = "";
             }
-            
+
             Runtime rt = Runtime.getRuntime();
-            
+
             System.out.println("Execing ");
 //            for (int j = 0; j < i; j++) {
 //                System.out.println(cmd[j]);
 //            }
             taLog.appendText("Backing up Migor...\n");
             Process proc = rt.exec(cmd);
-            
+
 /*          Because any updates to the JavaFX gui must be done from the JavaFX
             application thread, it is not possible to update taLog from
             StreamGobbler, so I use StreamGobbler to put stdout &
             stderr files, and copy the contents of the files to taLog
             when the 7zip'ing finishes.
-*/            
+*/
             // any error message?
             FileOutputStream fosErr = new FileOutputStream(strErrFil);
-            StreamGobbler errorGobbler = new 
-                StreamGobbler(proc.getErrorStream(), "ERROR", fosErr);            
+            StreamGobbler errorGobbler = new
+                StreamGobbler(proc.getErrorStream(), "ERROR", fosErr);
 
             // any output?
             FileOutputStream fosOut = new FileOutputStream(strOutFil);
-            StreamGobbler outputGobbler = new 
+            StreamGobbler outputGobbler = new
                 StreamGobbler(proc.getInputStream(), "OUTPUT", fosOut);
 
             // kick them off - creates new threads
@@ -1288,9 +1291,9 @@ public class BackupGnuCashMigorController implements Initializable {
             System.out.println("ExitValue: " + exitVal);
             taLog.appendText("7-zip ExitValue: " + exitVal + "\n");
             fosErr.flush();
-            fosErr.close();        
+            fosErr.close();
             fosOut.flush();
-            fosOut.close();        
+            fosOut.close();
         } catch (Throwable t)
         {
             taLog.appendText("7-Zip FAILED - StackTrace logged");
@@ -1301,7 +1304,7 @@ public class BackupGnuCashMigorController implements Initializable {
             Logger.getLogger(BackupGnuCashMigorController.class.getName())
                 .log(Level.SEVERE, null, t);
         }
-        
+
         // add stderr of 7-zip process to taLog
         Path pthErrFil = Paths.get(strErrFil);
         try (InputStream in = Files.newInputStream(pthErrFil);
@@ -1333,7 +1336,7 @@ public class BackupGnuCashMigorController implements Initializable {
         } catch (IOException x) {
             System.err.println(x);
             taLog.appendText("IOException reading " + pthOutFil);
-        }        
+        }
         // copy archive to dropbox
         if (exitVal != 0) {
             taLog.appendText("Error creating archive - skipping copy to DropBox");
@@ -1356,9 +1359,9 @@ public class BackupGnuCashMigorController implements Initializable {
 
     @FXML
     public void handleBtnActionChooseGCDat(Event e) throws IOException {
-              
-        final FileChooser fileChooser = new FileChooser();         
-        fileChooser.setTitle("Choose GnuCash Data file");   
+
+        final FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose GnuCash Data file");
         final File file = new File(txtGcDatFilStr.getText());
         final String strDir = file.getParent();
         final Path pathGcDatDir = Paths.get(strDir);
@@ -1370,10 +1373,10 @@ public class BackupGnuCashMigorController implements Initializable {
         fileChooser.setInitialFileName(file.getName());
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("GnuCash files (*.gnucash)", "*.gnucash");
         fileChooser.getExtensionFilters().add(extFilter);
-        
+
         // get a reference to the current stage for use with showOpenDialog
         //  so it is modal
-                
+
         Scene scene = btnChooseGCDatFil.getScene(); // any control would do
         if (scene != null) {
             //System.out.println("scene!=null");
@@ -1391,22 +1394,22 @@ public class BackupGnuCashMigorController implements Initializable {
             //System.out.println("scene=null");
             taLog.appendText("Error: Cannot open modal fileChooser - scene is null\n");
         }
-    } 
+    }
 
     @FXML
     public void handleBtnActionChooseMigor() {
-              
-        final FileChooser fileChooser = new FileChooser();         
-        fileChooser.setTitle("Choose Migor Front End file");   
+
+        final FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose Migor Front End file");
         final File file = new File(txtMigorFeFilStr.getText());
         final String strDir = file.getParent();
         final Path pathMigorDir = Paths.get(strDir);
-        
+
         if (Files.isReadable(pathMigorDir)) {
             fileChooser.setInitialDirectory(new File(strDir));
         } else {
             fileChooser.setInitialDirectory(new File(strHome));
-        }        
+        }
         fileChooser.setInitialFileName(file.getName());
 //      FileChooser.ExtensionFilter extFilter1 = new FileChooser.ExtensionFilter("Microsoft Access (*.mdb)", "*.mdb");
 //      FileChooser.ExtensionFilter extFilter2 = new FileChooser.ExtensionFilter("Microsoft Access (*.accdb)", "*.accdb");
@@ -1440,7 +1443,7 @@ public class BackupGnuCashMigorController implements Initializable {
     public void handleBtnActionChooseDropBox() {
 
         // Chose the DropBox base directory
-        
+
         final DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Choose DropBox Base Directory");
         final File file = new File(txtDropBox.getText());
@@ -1451,7 +1454,7 @@ public class BackupGnuCashMigorController implements Initializable {
         } else {
             directoryChooser.setInitialDirectory(new File(strHome));
         }
-        
+
         Scene scene = btnChooseGCDatFil.getScene(); // any control would do
         if (scene != null) {
             //System.out.println("scene!=null");
@@ -1470,15 +1473,15 @@ public class BackupGnuCashMigorController implements Initializable {
             //System.out.println("scene=null");
             taLog.appendText("Error: Cannot open modal directoryChooser - scene is null\n");
         }
-    }    
-   
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 
         // ToggleGroup userGroup is not a control so has to be created here instead of in Scene Builder
         userGroup.selectedToggleProperty().addListener(
-            (ObservableValue<? extends Toggle> ov, Toggle old_toggle, 
+            (ObservableValue<? extends Toggle> ov, Toggle old_toggle,
             Toggle new_toggle) -> {
                 if (userGroup.getSelectedToggle() != null) {
                     //System.out.println(userGroup.getSelectedToggle().getUserData().toString());
@@ -1495,10 +1498,10 @@ public class BackupGnuCashMigorController implements Initializable {
         rb2.setToggleGroup(userGroup);
 
         setTooltips();
-               
+
         if (isValidUser() == false) {
             //System.out.println("Unknown user: " + BackupGnuCashMigor.winUserName);
-                   
+
           //taLog.setText("Error: Unknown user: " + BackupGnuCashMigorController.getWinUserName());
             taLog.setText("Error: Unknown user: " + winUserName);
             //taLog.setFill(Color.FIREBRICK);
@@ -1519,7 +1522,7 @@ public class BackupGnuCashMigorController implements Initializable {
                     taLog.setText("Error: Cannot create folder: " + pthBupGcM.toString());
                 }
             }
-            
+
             if (boolDirOK == true) {
               //if (getWinUserName().equals(getUserCg())) {
                 if (winUserName.equals(getUserCg())) {
@@ -1573,12 +1576,12 @@ public class BackupGnuCashMigorController implements Initializable {
                         }
                     }
                 });
-                                
+
                 // handle changes to txtPswd
 /*              txtPswd.focusedProperty().addListener(new ChangeListener<Boolean>(){
                     @Override
                     public void changed(ObservableValue<? extends Boolean> o, Boolean oldVal, Boolean newVal){
-                        //System.out.println("txtPswd.focusedProperty has changed!" + 
+                        //System.out.println("txtPswd.focusedProperty has changed!" +
                         //    " oldVal=" + oldVal + " newVal=" + newVal + " o=" + o);
                         if (oldVal == true) {
                             // txtPswd has just lost focus
@@ -1591,31 +1594,31 @@ public class BackupGnuCashMigorController implements Initializable {
                     }
                 });
 */
-  
+
                 // 18/7/2015 Try listening for changes to textProperty instead of focusedProperty
                 //      Works! ChangeListener is executed for every character added or deleted,
                 //          NOT just when Focus is lost.
-                
+
                 txtPswd.textProperty().addListener(new ChangeListener<String>(){
                     @Override
                     public void changed(ObservableValue<? extends String> o, String oldVal, String newVal){
-                        //System.out.println("txtPswd.textProperty has changed" + 
+                        //System.out.println("txtPswd.textProperty has changed" +
                         //    " oldVal=" + oldVal + " newVal=" + newVal + " o=" + o);
-                        
+
                             enable_or_disable_buttons();
                     }
                 });
 
                 // handle changes to txtVisPswd
-                
-                // 18/7/2015 I don't think we need following listener 
-                //      as txtPswd.textProperty and txtVisPswd.textProperty are 
+
+                // 18/7/2015 I don't think we need following listener
+                //      as txtPswd.textProperty and txtVisPswd.textProperty are
                 //      bound bidirectionally
-                
+
 /*              txtVisPswd.focusedProperty().addListener(new ChangeListener<Boolean>(){
                     @Override
                     public void changed(ObservableValue<? extends Boolean> o, Boolean oldVal, Boolean newVal){
-                        //System.out.println("txtVisPswd.focusedProperty has changed!" + 
+                        //System.out.println("txtVisPswd.focusedProperty has changed!" +
                         //    " oldVal=" + oldVal + " newVal=" + newVal + " o=" + o);
                         if (oldVal == true) {
                             // txtVisPswd has just lost focus
@@ -1653,7 +1656,7 @@ public class BackupGnuCashMigorController implements Initializable {
                 // txtPswd    is a PasswordField    (masked)
                 // txtVisPswd is a TextField        (not masked)
                 // Only 1 is visible based on if chbShowPswd is ticked
-                
+
                 // Bind properties. Toggle txtVisPswd and txtPswd
                 // visibility and managability properties mutually when chbShowPswd's state is changed.
                 // Because we want to display only one component (txtVisPswd or txtPswd)
@@ -1661,7 +1664,7 @@ public class BackupGnuCashMigorController implements Initializable {
                 // Ref http://stackoverflow.com/questions/17014012/how-to-unmask-a-javafx-passwordfield-or-properly-mask-a-textfield
                 //
                 // managedProperty : Defines whether or not this node's layout will be managed by it's parent.
-                
+
               //txtVisPswd.managedProperty().bind(chbShowPswd.selectedProperty());
                 txtVisPswd.visibleProperty().bind(chbShowPswd.selectedProperty());
 
@@ -1671,7 +1674,7 @@ public class BackupGnuCashMigorController implements Initializable {
                 // Bind the textField and passwordField text values bidirectionally.
                 //      ie If 1 changes, the other also changes
                 txtVisPswd.textProperty().bindBidirectional(txtPswd.textProperty());
-                
+
                 enable_or_disable_buttons();
             }
         }

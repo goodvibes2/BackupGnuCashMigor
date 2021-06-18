@@ -27,24 +27,24 @@ import javafx.stage.Stage;
  * This project backs up GnuCash + Migor using 7-Zip.
  * Can be run for users: cgood or Gordon
  * Platform: Windows 7/10
- * 
+ *
  * 18/05/2014 CRG Created
  * 25/05/2016 CRG Remove unused imports.
- * 
+ *
  * @author cgood
  */
 
 public class BackupGnuCashMigor extends Application {
-    
+
     @Override
     public void start(Stage stage) throws Exception {
 
         Parent root = FXMLLoader.load(getClass().getResource("BackupGnuCashMigor.fxml"));
         Scene scene = new Scene(root);
-        
-        stage.setTitle("Backup GnuCash/Migor");        
+
+        stage.setTitle("Backup GnuCash/Migor");
         stage.setScene(scene);
-        
+
         scene.getStylesheets().add(BackupGnuCashMigor.class.getResource("BackupGnuCashMigor.css").toExternalForm());
 
         stage.show();
@@ -56,5 +56,5 @@ public class BackupGnuCashMigor extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    
+
 }
