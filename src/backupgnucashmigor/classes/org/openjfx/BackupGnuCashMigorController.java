@@ -66,6 +66,8 @@
     11/03/2020 2.01 Fix bug where a deleted Book was not also removed from defaultProps so
                     would reappear next time defaultProperties file was loaded.
     18/06/2021 2.02 Clear GC Mod DateTime and Migor FE Mod DateTime if file not found.
+    04/02/2021 2.03 Also backup C:\Users\goodc\AppData\Local\gtk-3.0\ and
+                    environment.local.
 */
 
 package org.openjfx;
@@ -919,6 +921,8 @@ public class BackupGnuCashMigorController implements Initializable {
      *   C:\Users\goodc\.gnucash\saved-reports-2.4
      *   C:\Users\goodc\.gnucash\books\MGCG2012.gnucash.gcm
      *   C:\Users\goodc\AppData\Roaming\GnuCash\
+     *   C:\Users\goodc\AppData\Local\gtk-3.0\
+     *   C:\Program Files (x86)\gnucash\etc\gnucash\environment.local
      *   C:\Users\goodc\Appdata\Roaming\GnuCashGSettings.reg
      *
      * Note that 7z will backup all files and directories, including sub-folders,
@@ -1037,6 +1041,32 @@ public class BackupGnuCashMigorController implements Initializable {
                 Path pathGcUsrCfgDir = Paths.get(System.getenv("APPDATA") + "\\GnuCash\\");
                 if (Files.exists(pathGcUsrCfgDir)) {
                     cmd[i++] = pathGcUsrCfgDir.toString() + "\\";
+                }
+
+                // Non GnuCash gtk3 configuration files
+                // %LOCALAPPDATA%\gtk-3.0\
+                // which may include among others, the following files
+                //   settings.ini
+                //   gtk.css
+                //   gtk-3.0.css
+                // Eg C:\User\goodc\AppData\Local\gtk-3.0\
+                Path pathGcGtk = Paths.get(System.getenv("LOCALAPPDATA") +
+                        FILE_SEPARATOR + "gtk-3.0");
+                if (Files.isReadable(pathGcGtk)) {
+                    cmd[i++] = pathGcGtk.toString() + FILE_SEPARATOR;
+                } else {
+                    taLog.appendText("Info: Skip as does not exist: " +
+                            pathGcGtk.toString() + "\n");
+                }
+
+                // [CE]:\Program Files (x86)\gnucash\etc\gnucash\environment.local if exists
+                String strPath = "\\Program Files (x86)\\gnucash\\etc\\gnucash\\environment.local";
+                Path pathGcEnv = Paths.get("C:" + strPath);
+                if (! Files.isReadable(pathGcEnv)) {
+                    pathGcEnv = Paths.get("E:" + strPath);
+                }
+                if (Files.isReadable(pathGcEnv)) {
+                    cmd[i++] = pathGcEnv.toString();
                 }
 
                 // Exported registry file
