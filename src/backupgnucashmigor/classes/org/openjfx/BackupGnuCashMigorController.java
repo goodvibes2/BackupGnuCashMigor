@@ -68,6 +68,7 @@
     18/06/2021 2.02 Clear GC Mod DateTime and Migor FE Mod DateTime if file not found.
     04/02/2021 2.03 Also backup C:\Users\goodc\AppData\Local\gtk-3.0\ and
                     environment.local.
+    05/05/2025 3.00 Add backup of Base Migor.
 */
 
 package org.openjfx;
@@ -160,11 +161,21 @@ public class BackupGnuCashMigorController implements Initializable {
     @FXML
     private Label lblMigorFeFilStr;
     @FXML
-    private TextField txtMigorFeFilStr;
+    private Label lblMigorAccFeFilStr;
     @FXML
-    private Button btnChooseMigorFeFil;
+    private TextField txtMigorAccFeFilStr;
     @FXML
-    private Label lblMigorModDate;
+    private Button btnChooseMigorAccFeFil;
+    @FXML
+    private Label lblMigorAccModDate;
+    @FXML
+    private Label lblMigorBaseFeFilStr;
+    @FXML
+    private TextField txtMigorBaseFeFilStr;
+    @FXML
+    private Button btnChooseMigorBaseFeFil;
+    @FXML
+    private Label lblMigorBaseModDate;
     @FXML
     private Label lblDropBox;
     @FXML
@@ -192,7 +203,9 @@ public class BackupGnuCashMigorController implements Initializable {
   //@FXML
     private Button btnBupGC;
     @FXML
-    private Button btnBupMigor;
+    private Button btnBupMigorAcc;
+    @FXML
+    private Button btnBupMigorBase;
     @FXML
     private Label lblLog;
     @FXML
@@ -216,8 +229,10 @@ public class BackupGnuCashMigorController implements Initializable {
     private static String gcDatFilCg =
         "E:\\Data\\GnuCash\\267\\MGCG2012\\MGCG2012.gnucash";
     private static String gcVerCg = ""; // optional version backup filename suffix
-    private static String migorDatFilCg =
+    private static String migorAccDatFilCg =
         "E:\\Data\\Access\\Access2010\\MGCG\\Migor2014V05.accdb";
+    private static String migorBaseDatFilCg =
+        "E:\\Data\\Base\\Migor.odb";
     private static String dropBoxCg =
         "E:\\Data\\Dropbox";
 
@@ -228,13 +243,16 @@ public class BackupGnuCashMigorController implements Initializable {
     private static String gcDatFilGm =
         "C:\\Users\\" + userGm + "\\My Documents\\GnuCash\\2.6.7\\BBGJ2012\\BBGJ2012.gnucash";
     private static String gcVerGm = "";
-    private static String migorDatFilGm =
+    private static String migorAccDatFilGm =
         "C:\\Users\\" + userGm + "\\My Documents\\Migor\\Migor2014V05.accdb";
+    private static String migorBaseDatFilGm =
+        "C:\\Users\\" + userGm + "\\My Documents\\Base\\Migor.odb"; // does NOT exist
     private static String dropBoxGm =
         "C:\\Users\\gordo\\Dropbox";
 
     private static Path pathGcDatFilStr;
-    private static Path  pathMigorFeFilStr;
+    private static Path  pathMigorAccFeFilStr;
+    private static Path  pathMigorBaseFeFilStr;
   //private static String strDropBoxDir;
   //private static final String strHome = System.getProperty("user.home");
     private static       String strHome = System.getProperty("user.home");
@@ -262,8 +280,8 @@ public class BackupGnuCashMigorController implements Initializable {
         //}
         defaultProps.setProperty("gcV2Cfg", String.valueOf(chbGcV2Cfg.isSelected()));
         defaultProps.setProperty("gcV3Cfg", String.valueOf(chbGcV3Cfg.isSelected()));
-        defaultProps.setProperty("migorDatFil", txtMigorFeFilStr.getText());
-        defaultProps.setProperty("migorDatFil", txtMigorFeFilStr.getText());
+        defaultProps.setProperty("migorAccDatFil", txtMigorAccFeFilStr.getText());
+        defaultProps.setProperty("migorBaseDatFil", txtMigorBaseFeFilStr.getText());
 
         try (FileOutputStream out = new FileOutputStream(Paths.get(strErrFil).getParent() +
                 "\\defaultProperties")) {
@@ -293,12 +311,14 @@ public class BackupGnuCashMigorController implements Initializable {
             if (winUserName.equals(getUserCg())) {
                 gcDatFilCg = defaultProps.getProperty("gcDatFil");
                 gcVerCg = defaultProps.getProperty("gcVer");
-                migorDatFilCg = defaultProps.getProperty("migorDatFil");
+                migorAccDatFilCg = defaultProps.getProperty("migorAccDatFil");
+                migorBaseDatFilCg = defaultProps.getProperty("migorBaseDatFil");
                 dropBoxCg = defaultProps.getProperty("dropBox");
             } else {
                 gcDatFilGm = defaultProps.getProperty("gcDatFil");
                 gcVerGm = defaultProps.getProperty("gcVer");
-                migorDatFilGm = defaultProps.getProperty("migorDatFil");
+                migorAccDatFilGm = defaultProps.getProperty("migorAccDatFil");
+                migorBaseDatFilGm = defaultProps.getProperty("migorBaseDatFil");
                 dropBoxGm = defaultProps.getProperty("dropBox");
             }
             //in.close();  // done automatically when 'try with resources' ends
@@ -342,11 +362,19 @@ public class BackupGnuCashMigorController implements Initializable {
         }
     }
 
-    public static String getMigorDatFil(String strInUser) {
+    public static String getMigorAccDatFil(String strInUser) {
         if (strInUser.equals(userCg)) {
-            return migorDatFilCg;
+            return migorAccDatFilCg;
         } else {
-            return migorDatFilGm;
+            return migorAccDatFilGm;
+        }
+    }
+
+    public static String getMigorBaseDatFil(String strInUser) {
+        if (strInUser.equals(userCg)) {
+            return migorBaseDatFilCg;
+        } else {
+            return migorBaseDatFilGm;
         }
     }
 
@@ -549,9 +577,14 @@ public class BackupGnuCashMigorController implements Initializable {
             "  HKCU\\Software\\GSettings\\org\\gnucash"
         ));
 
-        txtMigorFeFilStr.setTooltip(new Tooltip(
-            "Migor Front End:\n" +
-            "The full directory and file string of the Migor Front End database.\n"
+        txtMigorAccFeFilStr.setTooltip(new Tooltip(
+            "Migor Access Front End:\n" +
+            "The full directory and file string of the Migor Access Front End database.\n"
+        ));
+
+        txtMigorBaseFeFilStr.setTooltip(new Tooltip(
+            "Migor Base Front End:\n" +
+            "The full directory and file string of the Migor Base Front End database.\n"
         ));
 
         txtDropBox.setTooltip(new Tooltip(
@@ -559,7 +592,8 @@ public class BackupGnuCashMigorController implements Initializable {
             "The encrypted compressed backup file will be saved in a sub-directory\n" +
             "of this directory.\n" +
             "The GnuCash backup file will be saved in a sub-directory called 'GnuCash'.\n" +
-            "The Migor backup file will be saved in a sub-directory called 'Migor'."
+            "The Migor Access backup file will be saved in a sub-directory called 'Migor'.\n" +
+            "The Migor Base backup file will be saved in a sub-directory called 'BaseBackup'."
         ));
 
         // Tooltips (same) for txtPswd & txtVisPswd
@@ -581,13 +615,24 @@ public class BackupGnuCashMigorController implements Initializable {
             "See the Tooltips of those checkboxes for details.\n"
         ));
 
-        btnBupMigor.setTooltip(new Tooltip(
-            "Backup Migor:\n" +
-            "The Migor Front End database, and also the MigorData database in the same directory,\n" +
+        btnBupMigorAcc.setTooltip(new Tooltip(
+            "Backup Access Migor:\n" +
+            "The Migor Access Front End database, and also the MigorData database in the same directory,\n" +
             "will be archived (compressed and encrypted) to the 'Backup' sub-directory\n" +
             "of the database directory. The database files themself remain unaltered.\n" +
             "Then the archive will be copied to the 'Migor' sub-directory of the DropBox\n" +
             "directory.\n" +
+            "The text files used when getting stock prices from the internet (GetQuote.*)\n" +
+            "are also included in the archive.\n"
+        ));
+
+        btnBupMigorBase.setTooltip(new Tooltip(
+            "Backup Base Migor:\n" +
+            "The Migor Base Front End database, and also the database\\Migor.* files in the same directory,\n" +
+            "will be archived (compressed and encrypted) to the 'BaseBackup' sub-directory\n" +
+            "of the Dropbox Base Directory. The database files themself remain unaltered.\n" +
+            //"Then the archive will be copied to the 'Migor' sub-directory of the DropBox\n" +
+            //"directory.\n" +
             "The text files used when getting stock prices from the internet (GetQuote.*)\n" +
             "are also included in the archive.\n"
         ));
@@ -599,7 +644,8 @@ public class BackupGnuCashMigorController implements Initializable {
         boolean boolUserOk = false;
         boolean boolPswdOk = false;
         boolean boolGcOk = false;
-        boolean boolMigorOk = false;
+        boolean boolMigorAccOk = false;
+        boolean boolMigorBaseOk = false;
         boolean boolDropBoxOk = false;
 
         taLog.clear();
@@ -727,28 +773,28 @@ public class BackupGnuCashMigorController implements Initializable {
             lblGCModDate.setText("Modified :");
         }
 
-        // Check Migor front end file
+        // Check Migor Access front end file
         //  Note: If MS Access 2013 has the database file open, it seems to have it locked
         //      which causes Files.isReadable to fail
 
-        pathMigorFeFilStr = Paths.get(txtMigorFeFilStr.getText());
-        if (Files.isReadable(pathMigorFeFilStr)) {
-            String strMigorData;
-            if (txtMigorFeFilStr.getText().endsWith(".accdb")) {
-                strMigorData = "MigorData.accdb";
+        pathMigorAccFeFilStr = Paths.get(txtMigorAccFeFilStr.getText());
+        if (Files.isReadable(pathMigorAccFeFilStr)) {
+            String strMigorAccData;
+            if (txtMigorAccFeFilStr.getText().endsWith(".accdb")) {
+                strMigorAccData = "MigorData.accdb";
             } else {
-                strMigorData = "MigorData.mdb";
+                strMigorAccData = "MigorData.mdb";
             }
-            Path pathMigorDatFilStr = Paths.get(pathMigorFeFilStr.getParent().toString(), "\\" + strMigorData);
-            if (Files.isReadable(pathMigorDatFilStr)) {
+            Path pathMigorAccDatFilStr = Paths.get(pathMigorAccFeFilStr.getParent().toString(), "\\" + strMigorAccData);
+            if (Files.isReadable(pathMigorAccDatFilStr)) {
                 // show the front end Last Modified date/time
                 //  FileTime epoch 1970-01-01T00:00:00Z (FileTime no longer used)
                 try {
                    SimpleDateFormat sdfFormat = new SimpleDateFormat("EEE, dd/MM/yyyy hh:mm aa");
-                   lblMigorModDate.setText("Modified : " + sdfFormat.format(Files.getLastModifiedTime(pathMigorFeFilStr).toMillis()));
+                   lblMigorAccModDate.setText("Modified : " + sdfFormat.format(Files.getLastModifiedTime(pathMigorAccFeFilStr).toMillis()));
                 } catch (IOException x) {
                     System.err.println(x);
-                    lblMigorModDate.setText("IOException getLastModifiedTime" + pathMigorFeFilStr.toString());
+                    lblMigorAccModDate.setText("IOException getLastModifiedTime" + pathMigorAccFeFilStr.toString());
                 }
 
                 // chk Migor Access front end file is not open (ensure lockfile does NOT exist)
@@ -758,30 +804,74 @@ public class BackupGnuCashMigorController implements Initializable {
                 //          ensure Migor2014.ldb does NOT exist in same folder
                 Path pathMigorLckFilStr;
                 Path pathMigorDatLckFilStr;
-                if (txtMigorFeFilStr.getText().endsWith(".accdb")) {
-                    pathMigorLckFilStr = Paths.get(txtMigorFeFilStr.getText().replace(".accdb", ".laccdb"));
-                    pathMigorDatLckFilStr = Paths.get(pathMigorFeFilStr.getParent().toString(), "\\" + strMigorData.replace(".accdb", ".laccdb"));
+                if (txtMigorAccFeFilStr.getText().endsWith(".accdb")) {
+                    pathMigorLckFilStr = Paths.get(txtMigorAccFeFilStr.getText().replace(".accdb", ".laccdb"));
+                    pathMigorDatLckFilStr = Paths.get(pathMigorAccFeFilStr.getParent().toString(), "\\" + strMigorAccData.replace(".accdb", ".laccdb"));
                 } else {
-                    pathMigorLckFilStr = Paths.get(txtMigorFeFilStr.getText().replace(".mdb", ".ldb"));
-                    pathMigorDatLckFilStr = Paths.get(pathMigorFeFilStr.getParent().toString(), "\\" + strMigorData.replace(".mdb", ".ldb"));
+                    pathMigorLckFilStr = Paths.get(txtMigorAccFeFilStr.getText().replace(".mdb", ".ldb"));
+                    pathMigorDatLckFilStr = Paths.get(pathMigorAccFeFilStr.getParent().toString(), "\\" + strMigorAccData.replace(".mdb", ".ldb"));
                 }
                 if (Files.isReadable(pathMigorLckFilStr)) {
-                    taLog.appendText("Error: Migor lock file " + pathMigorLckFilStr.toString() +
-                        " exists - Migor may be open or may have crashed leaving the lockfile\n");
+                    taLog.appendText("Error: Migor Access lock file " + pathMigorLckFilStr.toString() +
+                        " exists - Migor Access may be open or may have crashed leaving the lockfile\n");
                 } else {
                     if (Files.isReadable(pathMigorDatLckFilStr)) {
-                        taLog.appendText("Error: MigorData lock file " + pathMigorDatLckFilStr.toString() +
-                            " exists - Migor may be open or may have crashed leaving the lockfile\n");
+                        taLog.appendText("Error: MigorData Access lock file " + pathMigorDatLckFilStr.toString() +
+                            " exists - Migor Access may be open or may have crashed leaving the lockfile\n");
                     } else {
-                            boolMigorOk = true;
+                            boolMigorAccOk = true;
                     }
                 }
             } else {
-                taLog.appendText("Error: " + strMigorData + " does not exist in same folder as front end\n");
+                taLog.appendText("Error: " + strMigorAccData + " does not exist in same folder as front end\n");
             }
         } else {
-            taLog.appendText("Error: Migor Front End is not readable or does not exist or is locked\n");
-            lblMigorModDate.setText("Modified :");
+            taLog.appendText("Error: Migor Access Front End is not readable or does not exist or is locked\n");
+            lblMigorAccModDate.setText("Modified :");
+        }
+
+        // Check Migor Base (LibreOffice) front end file
+        //  Note: If MS Access 2013 has the database file open, it seems to have it locked
+        //      which causes Files.isReadable to fail
+        //      DOES THIS APPLY to Migor.odb and Base?   NO!
+        // E:\Data\Base\database should contain 4 files for each database that has been
+        //  extracted from the .odb i.e. Database is no longer embedded in .odb :
+        //   Migor.[backup|data|properties|script]
+        // If Migor.lck is also in the "database" directory, it means the database is still open.
+
+        pathMigorBaseFeFilStr = Paths.get(txtMigorBaseFeFilStr.getText());
+        if (Files.isReadable(pathMigorBaseFeFilStr)) {
+            String strMigorBaseData = "Migor.data";
+            Path pathMigorBaseDatFilStr = Paths.get(pathMigorBaseFeFilStr.getParent().toString(), "\\database\\" + strMigorBaseData);
+            if (Files.isReadable(pathMigorBaseDatFilStr)) {
+                // show the front end Last Modified date/time
+                //  FileTime epoch 1970-01-01T00:00:00Z (FileTime no longer used)
+                try {
+                   SimpleDateFormat sdfFormat = new SimpleDateFormat("EEE, dd/MM/yyyy hh:mm aa");
+                   lblMigorBaseModDate.setText("Modified : " + sdfFormat.format(Files.getLastModifiedTime(pathMigorBaseFeFilStr).toMillis()));
+                } catch (IOException x) {
+                    System.err.println(x);
+                    lblMigorBaseModDate.setText("IOException getLastModifiedTime" + pathMigorBaseFeFilStr.toString());
+                }
+
+                // chk Migor Base database is not open (ensure lockfile does NOT exist)
+                // i.e If Base front end file is E:\Data\Base\Migor.odb
+                //          ensure E:\Data\Base\database\Migor.lck does NOT exist
+                Path pathMigorLckFilStr;
+                //Path pathMigorDatLckFilStr;
+                pathMigorLckFilStr = Paths.get(txtMigorBaseFeFilStr.getText().replace("Migor.odb", "database\\Migor.lck"));
+                if (Files.isReadable(pathMigorLckFilStr)) {
+                    taLog.appendText("Error: Migor Base lock file " + pathMigorLckFilStr.toString() +
+                        " exists - Migor Base may be open or may have crashed leaving the lockfile\n");
+                } else {
+                    boolMigorBaseOk = true;
+                }
+            } else {
+                taLog.appendText("Error: " + strMigorBaseData + " does not exist in database folder\n");
+            }
+        } else {
+            taLog.appendText("Error: Migor Base Front End is not readable or does not exist\n");
+            lblMigorBaseModDate.setText("Modified :");
         }
 
         // Validate DropBox directory
@@ -813,19 +903,30 @@ public class BackupGnuCashMigorController implements Initializable {
             }
         }
 
-        // enable or disable btnBupMigor
-        if (boolUserOk && boolPswdOk && boolMigorOk && boolDropBoxOk) {
-            if (btnBupMigor.isDisabled()) {        // if Disabled
-                btnBupMigor.setDisable(false);     //     Enable
+        // enable or disable btnBupMigorAcc
+        if (boolUserOk && boolPswdOk && boolMigorAccOk && boolDropBoxOk) {
+            if (btnBupMigorAcc.isDisabled()) {        // if Disabled
+                btnBupMigorAcc.setDisable(false);     //     Enable
             }
         } else {
-            if (! btnBupMigor.isDisabled()) {      // if Enabled
-                btnBupMigor.setDisable(true);     //      Disable
+            if (! btnBupMigorAcc.isDisabled()) {      // if Enabled
+                btnBupMigorAcc.setDisable(true);     //      Disable
+            }
+        }
+
+        // enable or disable btnBupMigorBase
+        if (boolUserOk && boolPswdOk && boolMigorBaseOk && boolDropBoxOk) {
+            if (btnBupMigorBase.isDisabled()) {        // if Disabled
+                btnBupMigorBase.setDisable(false);     //     Enable
+            }
+        } else {
+            if (! btnBupMigorBase.isDisabled()) {      // if Enabled
+                btnBupMigorBase.setDisable(true);     //      Disable
             }
         }
 
         // enable or disable btnSaveSettings
-        if (boolUserOk && boolGcOk && boolMigorOk && boolDropBoxOk) {
+        if (boolUserOk && boolGcOk && boolMigorAccOk && boolMigorBaseOk && boolDropBoxOk) {
             if (btnSaveSettings.isDisabled()) {        // if Disabled
                 btnSaveSettings.setDisable(false);     //     Enable
                 //System.out.println("btnSaveSettings Enabled");
@@ -837,7 +938,7 @@ public class BackupGnuCashMigorController implements Initializable {
         }
 
         // Change Focus to password if all except password OK
-        if ((boolUserOk && boolGcOk && boolMigorOk && boolDropBoxOk) && (! isValidPswd()) ) {
+        if ((boolUserOk && boolGcOk && boolMigorAccOk && boolMigorBaseOk && boolDropBoxOk) && (! isValidPswd()) ) {
             //System.out.println("txtPswd.isVisible=" + txtPswd.isVisible() +
             //    " txtVisPswd.isVisible=" + txtVisPswd.isVisible());
             if (txtPswd.isVisible()) {
@@ -902,7 +1003,8 @@ public class BackupGnuCashMigorController implements Initializable {
 
         txtGcDatFilStr.setText  (getGcDatFil   (strInUser));
         txtGcVer.setText        (getGcVer      (strInUser));
-        txtMigorFeFilStr.setText(getMigorDatFil(strInUser));
+        txtMigorAccFeFilStr.setText(getMigorAccDatFil(strInUser));
+        txtMigorBaseFeFilStr.setText(getMigorBaseDatFil(strInUser));
         txtDropBox.setText      (getDropBoxDir (strInUser));
 
         setTooltips();  // contain user dependent filestrings
@@ -915,7 +1017,7 @@ public class BackupGnuCashMigorController implements Initializable {
      * /C               NOT Used
      * "E:\Program Files\7-Zip\7z.exe"
      *   a
-     *   E:\Data\GnuCash\267\MGCG2012\Backup\GnuCashMGCG2012_%yyyymmdd%_267.7z
+     *   E:\Data\GnuCash\267\MGCG2012\Backup\GnuCashMGCG2012_%yyyymmddhhmm%_267.7z
      *   -p%pswd%
      *   E:\Data\GnuCash\267\MGCG2012\MGCG2012.gnucash
      *   C:\Users\goodc\.gnucash\saved-reports-2.4
@@ -1184,12 +1286,12 @@ public class BackupGnuCashMigorController implements Initializable {
     }
 
     /**
-     * Backup Migor by using commands like
+     * Backup Migor Access by using commands like
      * cmd.exe          NOT Used
      * /C               NOT Used
      * "E:\Program Files\7-Zip\7z.exe"
      *  a
-     *  E:\Data\Access\Access2010\MGCG\Backup\MigorMGCG%yyyymmdd%.7z
+     *  E:\Data\Access\Access2010\MGCG\Backup\MigorMGCG%yyyymmddhhmm%.7z
      *  -p%pswd%
      *  E:\Data\Access\Access2010\MGCG\Migor2014V05.accdb
      *  E:\Data\Access\Access2010\MGCG\MigorData.accdb
@@ -1206,7 +1308,7 @@ public class BackupGnuCashMigorController implements Initializable {
      * @throws java.io.IOException
      */
     @FXML
-    public void handleBtnActionBupMigor(Event e) throws IOException {
+    public void handleBtnActionBupMigorAcc(Event e) throws IOException {
         final int cmdElements = 12;
         String strArchive = "";
         int exitVal = 0;
@@ -1235,7 +1337,7 @@ public class BackupGnuCashMigorController implements Initializable {
 
             // archive file string eg
             // E:\Data\Access\Access2010\MGCG\Backup\MigorMGCGyyyymmddhhmm.7z
-            FileName fileName = new FileName(txtMigorFeFilStr.getText(),
+            FileName fileName = new FileName(txtMigorAccFeFilStr.getText(),
                     System.getProperty("file.separator").charAt(0), '.');
             LocalDateTime today = LocalDateTime.now();
             strArchive = fileName.path() + "\\Backup\\Migor";
@@ -1253,14 +1355,14 @@ public class BackupGnuCashMigorController implements Initializable {
             // password
             cmd[i++] = "-p" + txtPswd.getText();
 
-            // Migor FrontEnd file eg
+            // Migor Access FrontEnd file eg
             //  E:\Data\Access\Access2010\MGCG\Migor2014V02.accdb
-            cmd[i++] = "\"" + txtMigorFeFilStr.getText() + "\"";
+            cmd[i++] = "\"" + txtMigorAccFeFilStr.getText() + "\"";
 
             // Migor data db file string
             //  eg E:\Data\Access\Access2010\MGCG\MigorData.accdb
             cmd[i++] = "\"" + fileName.path() + "\\MigorData." +
-                (txtMigorFeFilStr.getText().endsWith(".mdb") ? "mdb" : "accdb") + "\"" ;
+                (txtMigorAccFeFilStr.getText().endsWith(".mdb") ? "mdb" : "accdb") + "\"" ;
 
             // E:\Data\Access\Access2010\MGCG\GetQuote.bat
             cmd[i++] = "\"" + fileName.path() + "\\GetQuote.bat\"";
@@ -1293,7 +1395,7 @@ public class BackupGnuCashMigorController implements Initializable {
 //            for (int j = 0; j < i; j++) {
 //                System.out.println(cmd[j]);
 //            }
-            taLog.appendText("Backing up Migor...\n");
+            taLog.appendText("Backing up Migor Access...\n");
             Process proc = rt.exec(cmd);
 
 /*          Because any updates to the JavaFX gui must be done from the JavaFX
@@ -1387,6 +1489,186 @@ public class BackupGnuCashMigorController implements Initializable {
         }
     }
 
+    /**
+     * Backup Migor Base by using commands like
+     * "E:\Program Files\7-Zip\7z.exe"
+     *  a -spf2
+     *  C:\Users\goodc\OneDrive\BaseBackup\MigorBackup%yyyymmddhhmm%.7z
+     *  -p%pswd%
+     *  E:\Data\Base\Migor.odb
+     *  "E:\Data\Base\database\Migor.*"
+     *  E:\Data\Base\GetQuote.bat
+     *  E:\Data\Base\GetQuote.err
+     *  E:\Data\Base\GetQuote.out
+     *  E:\Data\Base\GetQuote.pl
+     *  E:\Data\Base\GetQuoteList.txt
+     *
+     * @author goodc
+     * @param e
+     * @throws java.io.IOException
+     */
+
+    public void handleBtnActionBupMigorBase(Event e) throws IOException {
+        final int cmdElements = 12;
+        //String strArchive = "";
+        int exitVal = 0;
+
+        // create archive using 7z.exe
+        taLog.clear();
+        String str7z = "\\Program Files\\7-Zip\\7z.exe";
+        Path path7z = Paths.get("C:" + str7z);
+        if (! Files.isExecutable(path7z)) {
+            path7z = Paths.get("E:" + str7z);
+            if (! Files.isExecutable(path7z)) {
+                taLog.setText("Error: Cannot execute " + str7z
+                    + " on either C: or E:" );
+                return;
+            }
+        }
+        try {
+            int i = 0;
+            String[] cmd = new String[cmdElements];
+
+            // 7-zip executable eg
+            // "E:\Program Files\7-Zip\7z.exe"
+            // not sure if need to quote, but doesn't hurt
+            cmd[i++] = "\"" + path7z + "\"";
+            cmd[i++] = "a";     // add to archive
+            cmd[i++] = "-spf2"; // -spf2 = use full paths without drive letter
+                                //  so it is clear which files are from
+                                //  "database" directory
+
+            // archive file string eg
+            // C:\Users\goodc\OneDrive\BaseBackup\MigorBackupyyyymmddhhmm.7z
+            LocalDateTime today = LocalDateTime.now();
+            String strFileName = "MigorBackup"
+              + today.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
+              + ".7z";
+            Path pathArchive = Paths.get(
+              txtDropBox.getText(), "BaseBackup", strFileName);
+            cmd[i++] = "\"" + pathArchive + "\"";
+
+            // password
+            cmd[i++] = "-p" + txtPswd.getText();
+
+            // Migor Base FrontEnd file eg
+            //  E:\Data\Base\Migor.odb
+            cmd[i++] = "\"" + txtMigorBaseFeFilStr.getText() + "\"";
+
+            // Migor Base Database file string
+            //  eg E:\Data\Base\database\Migor.*
+            //FileName fileName = new FileName(txtMigorBaseFeFilStr.getText(),
+            //      System.getProperty("file.separator").charAt(0), '.');
+
+            Path pathDb = Paths.get(txtMigorBaseFeFilStr.getText());
+            pathDb = pathDb.getParent();    // strip Migor.odb
+            String strFeDir = pathDb.toString();    // Dir containing Front End Migor.odb
+            pathDb = Paths.get(pathDb.toString(), "database");
+
+            cmd[i++] = "\"" + pathDb.toString() + FILE_SEPARATOR + "Migor.*" + "\"";
+
+            // E:\Data\Base\GetQuote.bat
+            cmd[i++] = "\"" + strFeDir + FILE_SEPARATOR + "GetQuote.bat\"";
+
+            // E:\Data\Base\GetQuote.err
+            cmd[i++] = "\"" + strFeDir + FILE_SEPARATOR + "GetQuote.err\"";
+
+            // E:\Data\Base\GetQuote.out
+            cmd[i++] = "\"" + strFeDir + FILE_SEPARATOR + "GetQuote.out\"";
+
+            // E:\Data\Base\GetQuote.pl
+            cmd[i++] = "\"" + strFeDir + FILE_SEPARATOR + "GetQuote.pl\"";
+
+            // E:\Data\Base\GetQuoteList.txt
+            cmd[i++] = "\"" + strFeDir + FILE_SEPARATOR + "GetQuoteList.txt\"";
+
+            while (i < cmdElements) {
+                // stop rt.exec getting NullPointerException
+                cmd[i++] = "";
+            }
+
+            Runtime rt = Runtime.getRuntime();
+
+            System.out.println("Execing ");
+//            for (int j = 0; j < i; j++) {
+//                System.out.println(cmd[j]);
+//            }
+            taLog.appendText("Backing up Migor Base...\n");
+            Process proc = rt.exec(cmd);
+
+/*          Because any updates to the JavaFX gui must be done from the JavaFX
+            application thread, it is not possible to update taLog from
+            StreamGobbler, so I use StreamGobbler to put stdout &
+            stderr files, and copy the contents of the files to taLog
+            when the 7zip'ing finishes.
+*/
+            // any error message?
+            FileOutputStream fosErr = new FileOutputStream(strErrFil);
+            StreamGobbler errorGobbler = new
+                StreamGobbler(proc.getErrorStream(), "ERROR", fosErr);
+
+            // any output?
+            FileOutputStream fosOut = new FileOutputStream(strOutFil);
+            StreamGobbler outputGobbler = new
+                StreamGobbler(proc.getInputStream(), "OUTPUT", fosOut);
+
+            // kick them off - creates new threads
+            errorGobbler.start();
+            outputGobbler.start();
+
+            // any error?
+            exitVal = proc.waitFor();
+            System.out.println("ExitValue: " + exitVal);
+            taLog.appendText("7-zip ExitValue: " + exitVal + "\n");
+            fosErr.flush();
+            fosErr.close();
+            fosOut.flush();
+            fosOut.close();
+        } catch (Throwable t)
+        {
+            taLog.appendText("7-Zip FAILED - StackTrace logged");
+            if (exitVal == 0) {
+                exitVal = 99;
+            }
+            //t.printStackTrace();
+            Logger.getLogger(BackupGnuCashMigorController.class.getName())
+                .log(Level.SEVERE, null, t);
+        }
+
+        // add stderr of 7-zip process to taLog
+        Path pthErrFil = Paths.get(strErrFil);
+        try (InputStream in = Files.newInputStream(pthErrFil);
+            BufferedReader reader =
+                new BufferedReader(new InputStreamReader(in))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                if (!line.equals("")) {
+                    taLog.appendText(line + "\n");
+                }
+            }
+        } catch (IOException x) {
+            System.err.println(x);
+            taLog.appendText("IOException reading " + pthErrFil);
+        }
+        // add stdout of 7-zip process to taLog
+        Path pthOutFil = Paths.get(strOutFil);
+        try (InputStream in = Files.newInputStream(pthOutFil);
+            BufferedReader reader =
+                new BufferedReader(new InputStreamReader(in))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                if (! line.equals("")) {
+                    taLog.appendText(line + "\n");
+                }
+            }
+        } catch (IOException x) {
+            System.err.println(x);
+            taLog.appendText("IOException reading " + pthOutFil);
+        }
+    }
+
     @FXML
     public void handleBtnActionChooseGCDat(Event e) throws IOException {
 
@@ -1427,11 +1709,11 @@ public class BackupGnuCashMigorController implements Initializable {
     }
 
     @FXML
-    public void handleBtnActionChooseMigor() {
+    public void handleBtnActionChooseMigorAcc() {
 
         final FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose Migor Front End file");
-        final File file = new File(txtMigorFeFilStr.getText());
+        fileChooser.setTitle("Choose Migor Access Front End file");
+        final File file = new File(txtMigorAccFeFilStr.getText());
         final String strDir = file.getParent();
         final Path pathMigorDir = Paths.get(strDir);
 
@@ -1457,7 +1739,48 @@ public class BackupGnuCashMigorController implements Initializable {
             File fileSel = fileChooser.showOpenDialog(window);
             if (fileSel != null) {
                 try {
-                    txtMigorFeFilStr.setText(fileSel.getCanonicalPath());
+                    txtMigorAccFeFilStr.setText(fileSel.getCanonicalPath());
+                } catch (IOException ex) {
+                    Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                enable_or_disable_buttons();
+            }
+        } else {
+            //System.out.println("scene=null");
+            taLog.appendText("Error: Cannot open modal fileChooser - scene is null\n");
+        }
+    }
+
+    @FXML
+    public void handleBtnActionChooseMigorBase() {
+
+        final FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose Migor Base Front End file");
+        final File file = new File(txtMigorBaseFeFilStr.getText());
+        final String strDir = file.getParent();
+        final Path pathMigorDir = Paths.get(strDir);
+
+        if (Files.isReadable(pathMigorDir)) {
+            fileChooser.setInitialDirectory(new File(strDir));
+        } else {
+            fileChooser.setInitialDirectory(new File(strHome));
+        }
+        fileChooser.setInitialFileName(file.getName());
+//      FileChooser.ExtensionFilter extFilter1 = new FileChooser.ExtensionFilter("Microsoft Access (*.mdb)", "*.mdb");
+//      FileChooser.ExtensionFilter extFilter2 = new FileChooser.ExtensionFilter("Microsoft Access (*.accdb)", "*.accdb");
+//      fileChooser.getExtensionFilters().addAll(extFilter1, extFilter2 );
+
+        FileChooser.ExtensionFilter extFilter1 = new FileChooser.ExtensionFilter("Base Database Documents (*.odb)", "*.odb");
+        fileChooser.getExtensionFilters().addAll(extFilter1);
+
+        Scene scene = btnChooseGCDatFil.getScene(); // any control would do
+        if (scene != null) {
+            //System.out.println("scene!=null");
+            Window window = scene.getWindow();
+            File fileSel = fileChooser.showOpenDialog(window);
+            if (fileSel != null) {
+                try {
+                    txtMigorBaseFeFilStr.setText(fileSel.getCanonicalPath());
                 } catch (IOException ex) {
                     Logger.getLogger(BackupGnuCashMigorController.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -1559,20 +1882,23 @@ public class BackupGnuCashMigorController implements Initializable {
                     rb1.setSelected(true);
                     txtGcDatFilStr.setText(getGcDatFil(getUserCg()));
                     txtGcVer.setText(getGcVer(getUserCg()));
-                    txtMigorFeFilStr.setText(getMigorDatFil(getUserCg()));
+                    txtMigorAccFeFilStr.setText(getMigorAccDatFil(getUserCg()));
+                    txtMigorBaseFeFilStr.setText(getMigorBaseDatFil(getUserCg()));
                     txtDropBox.setText(getDropBoxDir(getUserCg()));
                     //setDropBoxDir(getUserCg());
                 } else {
                     rb2.setSelected(true);
                     txtGcDatFilStr.setText(getGcDatFil(getUserGm()));
                     txtGcVer.setText(getGcVer(getUserGm()));
-                    txtMigorFeFilStr.setText(getMigorDatFil(getUserGm()));
+                    txtMigorAccFeFilStr.setText(getMigorAccDatFil(getUserGm()));
+                    txtMigorBaseFeFilStr.setText(getMigorBaseDatFil(getUserGm()));
                     txtDropBox.setText(getDropBoxDir(getUserGm()));
                     //setDropBoxDir(getUserGm());
                 }
 
                 pathGcDatFilStr = Paths.get(txtGcDatFilStr.getText());
-                pathMigorFeFilStr= Paths.get(txtMigorFeFilStr.getText());
+                pathMigorAccFeFilStr= Paths.get(txtMigorAccFeFilStr.getText());
+                pathMigorBaseFeFilStr= Paths.get(txtMigorBaseFeFilStr.getText());
 
                 // handle changes to txtGcDatFilStr
                 txtGcDatFilStr.focusedProperty().addListener(new ChangeListener<Boolean>(){
@@ -1585,8 +1911,19 @@ public class BackupGnuCashMigorController implements Initializable {
                     }
                 });
 
-                // handle changes to txtMigorFeDatFilStr
-                txtMigorFeFilStr.focusedProperty().addListener(new ChangeListener<Boolean>(){
+                // handle changes to txtMigorAccFeDatFilStr
+                txtMigorAccFeFilStr.focusedProperty().addListener(new ChangeListener<Boolean>(){
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> o, Boolean oldVal, Boolean newVal){
+                        if (oldVal == true) {
+                            // has just lost focus
+                            enable_or_disable_buttons();
+                        }
+                    }
+                });
+
+                // handle changes to txtMigorBaseFeDatFilStr
+                txtMigorBaseFeFilStr.focusedProperty().addListener(new ChangeListener<Boolean>(){
                     @Override
                     public void changed(ObservableValue<? extends Boolean> o, Boolean oldVal, Boolean newVal){
                         if (oldVal == true) {
